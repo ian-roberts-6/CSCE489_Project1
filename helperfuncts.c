@@ -67,3 +67,16 @@ char** parse_user_input(char* user_string, int num_tokens) {
 	free(user_string_copy);
 	return parsed_string;
 }
+
+/**
+ * strip_trailing_newline - strip a trailing newline off of a string. 
+ * 
+*/
+void strip_trailing_newline(char* input_string) {
+	int string_length = strlen(input_string);
+	if (input_string[string_length - 1] == '\n') {
+		input_string[string_length - 1] = '\0';
+	}
+	return;
+
+}
