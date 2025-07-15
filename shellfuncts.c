@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "shellfuncts.h"
 
 
@@ -14,14 +17,35 @@
  * Returns 0 if successful.
  * Prints an error message and returns 1 if the file already exists.
  */
-int create(char* filename) {
-	//TODO - print an error message if the file already exists. (maybe fopen with read?)
-	FILE *opened_file = fopen(filename, "a");
-	if (opened_file == NULL) {
-		perror("Error creating file.");
+int create(char* filename, int bg_flag) {
+
+	pid_t pid;
+	pid = fork();
+
+	if (pid < 0)  {
+		perror("Fork failed");
 		return 1;
 	}
-	fclose(opened_file);
+	else if (pid == 0) { //child process
+		FILE *file = fopen(filename, "r"); //check if file exists
+		if (file != NULL) {
+			fprintf(stderr, "Error: File %s already exists", filename);
+			exit(1);
+		}
+		fclose(file);
+		file = fopen(filename, "a"); //Create file
+		if (file == NULL) {
+			perror("Error creating file.");
+			exit(1);
+		}
+		fclose(file);
+		exit(0);
+	}
+	else { //parent process
+		if (bg_flag == 0) {
+			wait(NULL);
+		}
+	}
 	return 0;
 }
 
@@ -30,16 +54,36 @@ int create(char* filename) {
  * Returns 0 if successful.
  * Prints an error message and returns 1 if the file does not exist.
  */
-int update(char* filename, int number, char* text) {
-	//TODO - check for existence of file.
-	FILE *file = fopen(filename, "a");
-	int length = strlen(text);
-	for (int i = 0; i < number; i++) {
-		fprintf(file, "%s\n", text);
-		fflush(file);
-		sleep(length/5);
+int update(char* filename, int number, char* text, int bg_flag) {
+	pid_t pid;
+	pid = fork();
+
+	if (pid < 0)  {
+		perror("Fork failed");
+		return 1;
 	}
-	fclose(file);
+	else if (pid == 0) { //child process
+		FILE *file = fopen(filename, "r"); //check if file exists
+		if (file == NULL) {
+			fprintf(stderr, "Error: File %s does not exist", filename);
+			exit(1);
+		}
+		fclose(file);
+		file = fopen(filename, "a");
+		int length = strlen(text);
+		for (int i = 0; i < number; i++) {
+			fprintf(file, "%s\n", text);
+			fflush(file);
+			sleep(length/5);
+		}
+		fclose(file);
+		exit(0);
+	}
+	else { //parent process
+		if (bg_flag == 0) {
+			wait(NULL);
+		}
+	}
 	return 0;
 }
 
@@ -48,24 +92,55 @@ int update(char* filename, int number, char* text) {
  * Returns 0 if successful.
  * Prints an error message and returns 1 if the file does not exist.
  */
-int list(char* filename) {
-	int length = strlen(filename);
-	char command[length + 5];
-	FILE *file = fopen(filename, "r");
-	if (file == NULL) {
-		perror("File does not exist");
+int list(char* filename, int bg_flag) {
+
+	pid_t pid;
+	pid = fork();
+
+	if (pid < 0)  {
+		perror("Fork failed");
 		return 1;
 	}
-	snprintf(command, length + 5, "cat %s", filename);
-	execl(command, "cat", filename, NULL);
-	fclose(file);
+	else if (pid == 0) { //child process
+		int length = strlen(filename);
+		char command[length + 5];
+		FILE *file = fopen(filename, "r"); //check if file exists
+		if (file == NULL) {
+			fprintf(stderr, "Error: File %s does not exist", filename);
+			exit(1);
+		}
+		fclose(file);
+		snprintf(command, length + 5, "cat %s", filename);
+		execl(command, "cat", filename, NULL);
+		exit(0);
+	}
+	else { //parent process
+		if (bg_flag == 0) {
+			wait(NULL);
+		}
+	}
 	return 0;
 }
 
 /**
  * dir - Prints a list of all files in the current directory to the screen.
  */
-void dir() {
-	execl("/bin/ls", "ls", NULL);
+void dir(int bg_flag) {
+	pid_t pid;
+	pid = fork();
+
+	if (pid < 0)  {
+		perror("Fork failed");
+		return;
+	}
+	else if (pid == 0) { //child process
+		execl("/bin/ls", "ls", NULL);
+		exit(0);
+	}
+	else { //parent process
+		if (bg_flag == 0) {
+			wait(NULL);
+		}
+	}
 	return;
 }

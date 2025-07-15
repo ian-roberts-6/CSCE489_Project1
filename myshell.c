@@ -29,7 +29,7 @@ int main(int argc, const char *argv[]) {
 		int num_tokens = get_num_tokens(user_input);	//Tokenize input
 		char** input_tokens = parse_user_input(user_input, num_tokens);
 		
-		if (strcmp("exit", input_tokens[0]) == 0) {	//Exit token sent
+		if (strcmp("exit", input_tokens[0]) == 0) {		//Exit token sent
 			exit_sent = 1;
 		} 
 		else {

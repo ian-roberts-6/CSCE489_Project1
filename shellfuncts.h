@@ -4,9 +4,9 @@
  *************************************************************************************/
 
 
-int create(char* filename);
-int update(char* filename, int number, char* text);
-int list(char* filename);
-void dir();
+int create(char* filename, int bg_flag);
+int update(char* filename, int number, char* text, int bg_flag);
+int list(char* filename, int bg_flag);
+void dir(int bg_flag);
 
 
