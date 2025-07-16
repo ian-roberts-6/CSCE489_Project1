@@ -23,19 +23,19 @@ int create(char* filename, int bg_flag) {
 	pid = fork();
 
 	if (pid < 0)  {
-		perror("Fork failed");
+		fprintf(stderr, "Fork failed\n");
 		return 1;
 	}
 	else if (pid == 0) { //child process
 		FILE *file = fopen(filename, "r"); //check if file exists
 		if (file != NULL) {
-			fprintf(stderr, "Error: File %s already exists", filename);
+			fprintf(stderr, "Error: File \"%s\" already exists\n", filename);
 			exit(1);
+			fclose(file);
 		}
-		fclose(file);
-		file = fopen(filename, "a"); //Create file
+		file = fopen(filename, "w"); //Create file
 		if (file == NULL) {
-			perror("Error creating file.");
+			fprintf(stderr, "Error creating file \"%s\"\n", filename);
 			exit(1);
 		}
 		fclose(file);
@@ -59,13 +59,13 @@ int update(char* filename, int number, char* text, int bg_flag) {
 	pid = fork();
 
 	if (pid < 0)  {
-		perror("Fork failed");
+		fprintf(stderr, "Fork failed\n");
 		return 1;
 	}
 	else if (pid == 0) { //child process
 		FILE *file = fopen(filename, "r"); //check if file exists
 		if (file == NULL) {
-			fprintf(stderr, "Error: File %s does not exist", filename);
+			fprintf(stderr, "Error: File \"%s\" does not exist\n", filename);
 			exit(1);
 		}
 		fclose(file);
@@ -98,20 +98,20 @@ int list(char* filename, int bg_flag) {
 	pid = fork();
 
 	if (pid < 0)  {
-		perror("Fork failed");
+		fprintf(stderr, "Fork failed\n");
 		return 1;
 	}
 	else if (pid == 0) { //child process
 		int length = strlen(filename);
-		char command[length + 5];
+		char command[length + 10];
 		FILE *file = fopen(filename, "r"); //check if file exists
 		if (file == NULL) {
-			fprintf(stderr, "Error: File %s does not exist", filename);
+			fprintf(stderr, "Error: File \"%s\" does not exist\n", filename);
 			exit(1);
 		}
 		fclose(file);
-		snprintf(command, length + 5, "cat %s", filename);
-		execl(command, "cat", filename, NULL);
+		// snprintf(command, length + 10, "/bin/cat %s", filename);
+		execl("/bin/cat", "cat", filename, NULL);
 		exit(0);
 	}
 	else { //parent process
@@ -130,7 +130,7 @@ void dir(int bg_flag) {
 	pid = fork();
 
 	if (pid < 0)  {
-		perror("Fork failed");
+		fprintf(stderr, "Fork failed\n");
 		return;
 	}
 	else if (pid == 0) { //child process
