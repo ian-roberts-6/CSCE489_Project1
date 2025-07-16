@@ -1,5 +1,5 @@
 /*************************************************************************************
- * helperfuncts.h - header file for helper functions not tied to any specific command.
+ * helperfuncts.h - header file for text parsing helper functions
  *
  *************************************************************************************/
 
