@@ -11,11 +11,22 @@
 #include <sys/wait.h>
 #include "shellfuncts.h"
 
+/** 
+ * Prints the statement that the child process was created.
+ * If bg_flag is 0, then wait for the child process to complete and print that it exited..
+*/
+void parent_process_tasks(pid_t child_pid, int bg_flag) {
+	printf("Child process with pid %d created\n", child_pid);
+	if (bg_flag == 0) {
+		waitpid(child_pid, NULL, 0);
+		printf("Child process with pid %d exited\n", child_pid);
+	}
+	return;
+}
 
 /**
  * create - Creates a new file in the current directory with name [filename].
- * Returns 0 if successful.
- * Prints an error message and returns 1 if the file already exists.
+ * Prints an error message if the file already exists.
  */
 int create(char* filename, int bg_flag) {
 
@@ -42,17 +53,14 @@ int create(char* filename, int bg_flag) {
 		exit(0);
 	}
 	else { //parent process
-		if (bg_flag == 0) {
-			wait(NULL);
-		}
+		parent_process_tasks(pid, bg_flag);
 	}
 	return 0;
 }
 
 /**
  * update - Appends [text] to the end of file [filename], repeated [n] times.
- * Returns 0 if successful.
- * Prints an error message and returns 1 if the file does not exist.
+ * Prints an error message if the file does not exist.
  */
 int update(char* filename, int number, char* text, int bg_flag) {
 	pid_t pid;
@@ -80,17 +88,14 @@ int update(char* filename, int number, char* text, int bg_flag) {
 		exit(0);
 	}
 	else { //parent process
-		if (bg_flag == 0) {
-			wait(NULL);
-		}
+		parent_process_tasks(pid, bg_flag);
 	}
 	return 0;
 }
 
 /**
  * list - Displays the contents of the named file on the workstation screen.
- * Returns 0 if successful.
- * Prints an error message and returns 1 if the file does not exist.
+ * Prints an error message if the file does not exist.
  */
 int list(char* filename, int bg_flag) {
 
@@ -102,22 +107,17 @@ int list(char* filename, int bg_flag) {
 		return 1;
 	}
 	else if (pid == 0) { //child process
-		int length = strlen(filename);
-		char command[length + 10];
 		FILE *file = fopen(filename, "r"); //check if file exists
 		if (file == NULL) {
 			fprintf(stderr, "Error: File \"%s\" does not exist\n", filename);
 			exit(1);
 		}
 		fclose(file);
-		// snprintf(command, length + 10, "/bin/cat %s", filename);
 		execl("/bin/cat", "cat", filename, NULL);
 		exit(0);
 	}
 	else { //parent process
-		if (bg_flag == 0) {
-			wait(NULL);
-		}
+		parent_process_tasks(pid, bg_flag);
 	}
 	return 0;
 }
@@ -138,9 +138,17 @@ void dir(int bg_flag) {
 		exit(0);
 	}
 	else { //parent process
-		if (bg_flag == 0) {
-			wait(NULL);
-		}
+		parent_process_tasks(pid, bg_flag);
+	}
+	return;
+}
+
+/**
+ * help - prints num_commands from command_list to the terminal, each on a newline.
+*/
+void help(unsigned int num_commands, const char** command_list) {
+	for (unsigned int i = 0; i < num_commands; i++) {
+		printf("%s\n", command_list[i]);
 	}
 	return;
 }

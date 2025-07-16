@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "shellfuncts.h"
 #include "helperfuncts.h"
 
@@ -15,10 +16,12 @@ const char* COMMAND_STRINGS[] = {
 	"update",
 	"list",
 	"dir",
+	"help",
 	"halt"
 };
 //Need to maintain the length of this array separately due to scoping issues.
-const int NUM_VALID_COMMANDS = 5; 
+const int NUM_VALID_COMMANDS = 6; 
+unsigned int INPUT_BUFFER_SIZE = 200;
 
 /** 
  * find_command_index - compares user input with the list of command strings to determine which one to execute.
@@ -43,8 +46,9 @@ int main(int argc, const char *argv[]) {
 	int exit_sent = 0; //Flag to determine if the user sent the exit command.
 
 	while (exit_sent == 0) {
-		char user_input[100];
-		printf("Shell> ");
+		pid_t pid = getpid();
+		char user_input[INPUT_BUFFER_SIZE];
+		printf("[%d] SHELL>", pid);
 		fgets(user_input, sizeof(user_input), stdin);	//Read user input
 		if (user_input[0] == '\n') {					//Check for empty input
 			continue;
@@ -58,27 +62,47 @@ int main(int argc, const char *argv[]) {
 		}
 		switch (find_command_index(input_tokens[0])) {	//Find command
 			case 0: //create
-				create(input_tokens[1], bg_flag);
+				if (num_tokens < 2+bg_flag) {
+					printf("Correct usage: create <filename>\n");
+				} else {
+					create(input_tokens[1], bg_flag);
+				}
 				break;
 
 			case 1: //update
-				update(input_tokens[1], atoi(input_tokens[2]), input_tokens[3], bg_flag);
+				if (num_tokens < 4+bg_flag) {
+					printf("Correct usage: update <filename> <number of lines> <text>\n");
+				} else {
+					char text[INPUT_BUFFER_SIZE];
+					strcpy(text, input_tokens[3]);
+					for (int i = 4; i < (num_tokens - bg_flag); i++) {
+						strcat(text, " ");
+						strcat(text, input_tokens[i]);
+					}
+					update(input_tokens[1], atoi(input_tokens[2]), text, bg_flag);
+				}
 				break;
 
 			case 2: //list
-				list(input_tokens[1], bg_flag);
+				if (num_tokens < 2+bg_flag) {
+					printf("Correct usage: list <filename>\n");
+				} else {
+					list(input_tokens[1], bg_flag);
+				}
 				break;
-
 			case 3: //dir
 				dir(bg_flag);
 				break;
 
-			case 4: //halt
-				exit_sent = 1;
+			case 4: //help
+				help(NUM_VALID_COMMANDS, COMMAND_STRINGS);
 				break;
 
+			case 5: //halt
+				exit_sent = 1;
+				break;
 			default:
-				printf("Command \"%s\" not recognized\n", input_tokens[0]);
+				printf("Command \"%s\" not recognized. Type \"help\" for a list of commands.\n", input_tokens[0]);
 		}
 		
 		free_string_array(input_tokens, num_tokens);	//Clear string array between uses.
