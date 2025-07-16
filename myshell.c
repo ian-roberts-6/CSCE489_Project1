@@ -9,13 +9,15 @@
 #include "shellfuncts.h"
 #include "helperfuncts.h"
 
-const char* COMMAND_STRINGS[] = { //The index of the string is what determines which command executes.
+//The index of the string in this array is used to determine which string to execute.
+const char* COMMAND_STRINGS[] = { 
 	"create",
 	"update",
 	"list",
 	"dir",
 	"halt"
 };
+//Need to maintain the length of this array separately due to scoping issues.
 const int NUM_VALID_COMMANDS = 5; 
 
 /** 
