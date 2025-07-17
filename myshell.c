@@ -73,6 +73,7 @@ int main(int argc, const char *argv[]) {
 				if (num_tokens < 4+bg_flag) {
 					printf("Correct usage: update <filename> <number of lines> <text>\n");
 				} else {
+					strip_quotes(input_tokens[3], input_tokens[num_tokens - (bg_flag + 1)]);
 					char text[INPUT_BUFFER_SIZE];
 					strcpy(text, input_tokens[3]);
 					for (int i = 4; i < (num_tokens - bg_flag); i++) {

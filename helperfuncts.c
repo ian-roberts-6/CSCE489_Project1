@@ -80,3 +80,22 @@ void strip_trailing_newline(char* input_string) {
 	return;
 
 }
+
+/**
+ * strip_quotes - removes leading quote from first_word and trailing quote from last_word.
+ * 
+*/
+void strip_quotes(char* first_word, char* last_word) {
+	int first_word_length = strlen(first_word);
+	if (first_word[0] == '"') {
+		for (int i = 0; i < first_word_length - 1; i++) {
+			first_word[i] = first_word[i + 1];
+		}
+		first_word[first_word_length - 1] = '\0';
+	}
+	int last_word_length = strlen(last_word);
+	if (last_word[last_word_length - 1] == '"') {
+		last_word[last_word_length - 1] = '\0';
+	}
+	return;
+}
